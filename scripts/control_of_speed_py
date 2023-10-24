@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+
+import rospy
+from std_msgs.msg import Float32
+from std_msgs.msg import Int8
+
+speed=0
+my_speed=Float32()
+def goal_speed(msg1):
+    global my_speed
+    my_speed.data=msg1.data
+def velocity(msg):
+    global speed
+    global my_speed
+
+    if(speed<101 and speed>-101):
+        if (msg.data<my_speed.data):
+            speed=speed+1
+        else:
+            speed=speed-1
+    pub.publish(speed)
+
+
+
+
+
+if __name__=='__main__':
+    rospy.init_node("velocity_control")
+    sub1= rospy.Subscriber("/virtual_dc_motor_controller/set_velocity_goal", Float32, callback=goal_speed)
+    sub= rospy.Subscriber("/virtual_dc_motor_driver/get_velocity", Float32, callback=velocity)
+    pub=rospy.Publisher("/virtual_dc_motor/set_cs", Int8, queue_size=1)
+
+    rospy.loginfo("Node has been started")
+    rospy.spin()
+
+    #drugim mozliwym rozwiazaniem jest policzenie ze maksymalny krok to 60 co 400Hz
+    #czyli 60*400*60*60 i podzielic przez caly obrot 4096 wychodzi wtedy ze dla 100
+    #maksymalny RPM wynosi okolo 351,56 wystarczy wtedy szukana predkosc podzielic 
+    #przez maksymalny RPM, spierwiastkowac i pomnozyc razy 100 a calosc zaokraglic
